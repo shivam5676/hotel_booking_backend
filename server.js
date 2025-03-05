@@ -80,15 +80,16 @@ app.get("/bookings/:userId", async (req, res) => {
 
 // Check-In after booking
 app.post("/check-in", async (req, res) => {
-  const { bookingId } = req.body;
+  const { bookingId,aadharNumbers  } = req.body;
 
   try {
     const booking = await prisma.booking.update({
       where: { id: bookingId },
-      data: { checkedIn: true },
+      data: { checkedIn: true ,aadharData:aadharNumbers},
     });
     res.json(booking);
   } catch (error) {
+    console.log(error)
     res.status(400).json({ error: "Check-in failed" });
   }
 });
