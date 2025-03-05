@@ -1,4 +1,6 @@
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -29,14 +31,21 @@ app.post("/register", async (req, res) => {
 // Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
+  try {
+      const user = await prisma.user.findUnique({ where: { email } });
 
   if (user && (await bcrypt.compare(password, user.password))) {
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
     res.json({ token });
   } else {
+    console.log(user)
+    
     res.status(401).json({ error: "Invalid credentials" });
   }
+  } catch (error) {
+     console.log(error)
+  }
+
 });
 
 // Get all hotels
