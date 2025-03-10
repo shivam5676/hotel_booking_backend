@@ -1,6 +1,4 @@
 import express from "express";
-import dotenv from "dotenv";
-dotenv.config();
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -31,21 +29,16 @@ app.post("/register", async (req, res) => {
 // Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  try {
-      const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
-    res.json({ token });
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+    res.json({ token: token, id: user.id });
   } else {
-    console.log(user)
-    
     res.status(401).json({ error: "Invalid credentials" });
   }
-  } catch (error) {
-     console.log(error)
-  }
-
 });
 
 // Get all hotels
@@ -60,7 +53,7 @@ app.post("/book", async (req, res) => {
 
   try {
     const booking = await prisma.booking.create({
-      data: { userId, hotelId, checkedIn: false },  // Initially checked-in = false
+      data: { userId, hotelId, checkedIn: false }, // Initially checked-in = false
     });
     res.json(booking);
   } catch (error) {
@@ -80,19 +73,17 @@ app.get("/bookings/:userId", async (req, res) => {
 
 // Check-In after booking
 app.post("/check-in", async (req, res) => {
-  const { bookingId,aadharNumbers  } = req.body;
+  const { bookingId } = req.body;
 
   try {
     const booking = await prisma.booking.update({
       where: { id: bookingId },
-      data: { checkedIn: true ,aadharData:aadharNumbers},
+      data: { checkedIn: true },
     });
     res.json(booking);
   } catch (error) {
-    console.log(error)
     res.status(400).json({ error: "Check-in failed" });
   }
 });
-
 
 app.listen(5000, () => console.log("Server running on port 5000"));
